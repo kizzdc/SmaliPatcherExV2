@@ -477,11 +477,11 @@ public partial class MainForm : Form
                     Log($" smali -> {root.DexName}");
 
                     // IMPORTANT: no --api on assemble
-                    var rs = Run("java", $"-jar \"{SmaliJar}\" assemble --output \"{outDex}\" \"{root.SmaliDir}\"", work);
-                    if (rs.Code != 0)
-                        throw new Exception($"smali recompile failed for {root.DexName}:\n{rs.Stderr}");
+                   // Assemble using the same Android API selected in the GUI.
+var rs = Run("java", $"-jar \"{SmaliJar}\" assemble --api {_apiLevel} --output \"{outDex}\" \"{root.SmaliDir}\"", work);
 
-                    Log($"[✓] Recompiled {root.DexName} ({new FileInfo(outDex).Length / 1024} KB)");
+if (rs.Code != 0 || !File.Exists(outDex))
+    throw new Exception($"smali recompile failed for {root.DexName}:\n{rs.Stderr}");
                 }
                 else
                 {
