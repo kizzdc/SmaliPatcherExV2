@@ -60,14 +60,12 @@ namespace SmaliPatcherEx
             new SmaliPatch
             {
                 Name = "mock_location_appops",
-                Description = "Mock Location AppOps bypass",
-                FileGlob = "AppOpsService.smali",
+                Description = "Mock Location AppOps bypass (SystemAppOpsHelper.noteOp)",
+                FileGlob = "SystemAppOpsHelper.smali",
                 Search =
-                    @"(\.method[^\n]*checkOp\([^)]*\)I[^\n]*\n" +
-                    @"(?:[ \t]*\.(?:registers|locals)[^\n]*\n)?)" +
-                    @"(.*?)" +
-                    @"(\.end method)",
-                Replace = "$1    const/4 v0, 0x0\n    return v0\n$3",
+                    @"(\.method[^\r\n]*noteOp\(Landroid/location/util/identity/CallerIdentity;\)Z[^\r\n]*\r?\n" +
+                    @"\s*\.(?:registers|locals)[^\r\n]*\r?\n).*?(\r?\n\.end method)",
+                Replace = "$1    const/4 v0, 0x1\n    return v0$2",
                 AndroidMin = 29,
                 AndroidMax = 99
             },
@@ -75,10 +73,12 @@ namespace SmaliPatcherEx
             new SmaliPatch
             {
                 Name = "mock_location_isprovider",
-                Description = "isMockProvider always true",
-                FileGlob = "LocationManagerService.smali",
-                Search = IsMockProviderSearch,
-                Replace = IsMockProviderReplace,
+                Description = "MockableLocationProvider.isMock always true",
+                FileGlob = "MockableLocationProvider.smali",
+                Search =
+                    @"(\.method[^\r\n]*\bisMock\(\)Z[^\r\n]*\r?\n" +
+                    @"\s*\.(?:registers|locals)[^\r\n]*\r?\n).*?(\r?\n\.end method)",
+                Replace = "$1    const/4 v0, 0x1\n    return v0$2",
                 AndroidMin = 31,
                 AndroidMax = 99
             },
@@ -86,10 +86,14 @@ namespace SmaliPatcherEx
             new SmaliPatch
             {
                 Name = "mock_location_provider_manager",
-                Description = "LocationProviderManager bypass",
-                FileGlob = "LocationProviderManager.smali",
-                Search = IsMockProviderSearch,
-                Replace = IsMockProviderReplace,
+                Description = "Hide mock flag at MockableLocationProvider output",
+                FileGlob = "MockableLocationProvider.smali",
+                Search =
+                    @"(const/4\s+([vp]\d+),\s*0x)1" +
+                    @"(\s*(?:\r?\n\s*\.line[^\r\n]*)*\s*\r?\n\s*" +
+                    @"invoke-virtual\s+\{[^}\r\n]*\2\},\s*" +
+                    @"Landroid/location/Location;->setIsFromMockProvider\(Z\)V)",
+                Replace = "${1}0$3",
                 AndroidMin = 33,
                 AndroidMax = 99
             },
@@ -97,14 +101,12 @@ namespace SmaliPatcherEx
             new SmaliPatch
             {
                 Name = "mock_location_appops_helper",
-                Description = "AppOpsHelper bypass",
-                FileGlob = "AppOpsHelper.smali",
+                Description = "SystemAppOpsHelper.checkMockLocationAccess bypass",
+                FileGlob = "SystemAppOpsHelper.smali",
                 Search =
-                    @"(\.method[^\n]*noteOp\([^)]*\)I[^\n]*\n" +
-                    @"(?:[ \t]*\.(?:registers|locals)[^\n]*\n)?)" +
-                    @"(.*?)" +
-                    @"(\.end method)",
-                Replace = "$1    const/4 v0, 0x0\n    return v0\n$3",
+                    @"(\.method[^\r\n]*checkMockLocationAccess\(ILjava/lang/String;\)Z[^\r\n]*\r?\n" +
+                    @"\s*\.(?:registers|locals)[^\r\n]*\r?\n).*?(\r?\n\.end method)",
+                Replace = "$1    const/4 v0, 0x1\n    return v0$2",
                 AndroidMin = 34,
                 AndroidMax = 99
             },
